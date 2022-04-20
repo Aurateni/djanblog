@@ -1,13 +1,14 @@
-from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from .models import Post
+from django.core.mail import send_mail
 from .forms import EmailPostForm
 
 
 def post_share(request, post_id):
     # Retrieve post by id
     post = get_object_or_404(Post, id=post_id, status='published')
+    sent = False
     if request.method == 'POST':
         # Form was submitted
         form = EmailPostForm(request.POST)
@@ -18,8 +19,10 @@ def post_share(request, post_id):
             subject = '{} ({}) recommends you reading "{}"'.format(cd['name'], cd['email'], post.title)
             message = 'Read "{}" at {}\n\n{}\'s comments: {}'.format(post.title, post_url, cd['name'], cd['comments'])
             send_mail(subject, message, 'aurateni@mail.ru', [cd['to']])
-            sent = True
+
+
     else:
+        
         form = EmailPostForm()
     return render(request, 'blog/post/share.html', {'post': post,
                                                     'form': form,
